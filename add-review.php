@@ -15,7 +15,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
         $rating = trim($_POST['rating']);
     }
 
-    $comments = trim($_POST['comments']);
+    if(empty(trim($_POST["comments"]))) {
+        $comments = " ";
+    } else {
+        $comments = trim($_POST['comments']);
+    }
+
 
     if(empty($title_err) && empty($rating_err)) {
         $sql = "SELECT id FROM shows WHERE title = '$title'";
@@ -24,7 +29,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
         $sql = "INSERT INTO user_has_reviews (show_id, user_id, rating, comments) VALUES (?, ?, ?, ?)";
 
         if ($stmt) {
-            mysqli_stmt_bind_param($stmt, "sss", $show_id, $_SESSION['id'], $rating, $comments);
+            mysqli_stmt_bind_param($stmt, "sss", $show_id, $_SESSION['user_id'], $rating, $comments);
             if(mysqli_stmt_execute($stmt)){
                 // Redirect to login page
                 header("location: /index.php/#home");

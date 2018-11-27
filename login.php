@@ -51,6 +51,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                             $_SESSION["id"] = $id;
                             $_SESSION["username"] = $username;
 
+                            $sql = "SELECT id FROM users WHERE username = '$username'";
+                            $user_id = $link->query($sql);
+
+                            $_SESSION["user_id"] = $user_id;
+
                             // Redirect user to welcome page
                             header("location: index.php/#home");
                         } else{

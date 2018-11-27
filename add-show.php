@@ -31,7 +31,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
                 $sql = "INSERT INTO user_has_shows (show_id, user_id, watched) VALUES (?,?,?)";
 
                 if($stmt) {
-                    mysqli_stmt_bind_param($stmt, "sss", $show_id, $_SESSION['id'], $watched);
+                    mysqli_stmt_bind_param($stmt, "sss", $show_id, $_SESSION['user_id'], $watched);
                     if(mysqli_stmt_execute($stmt)){
                         // Redirect to login page
                         header("location: /index.php/#home");
