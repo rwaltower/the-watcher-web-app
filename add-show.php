@@ -1,51 +1,69 @@
 <?php
 
 require_once('db-connect.php');
-
+$theerror = "";
+$user = $_SESSION['user_id'];
 if($_SERVER["REQUEST_METHOD"] == "POST") {
     if(empty(trim($_POST['title']))) {
         $title_err = "Must add show title";
+        $theerror = $title_err;
     } else {
         $title = trim($_POST['title']);
     }
 
-    if (isset($_POST['yes'])) {
+    if($_POST['watched'] == 'yes') {
         $watched = true;
     } else {
         $watched = false;
     }
 
     if(empty($title_err)) {
-        $sql = "INSERT INTO shows (title) VALUES (?)";
-
-        if($stmt = mysqli_prepare($link, $sql)) {
-            mysqli_stmt_bind_param($stmt, "s", $param_title);
-            $param_title = $title;
-
-            // Attempt to execute the prepared statement
-            if(mysqli_stmt_execute($stmt)){
-                // Redirect to login page
-                $sql = "SELECT LAST_INSERT_ID()";
-                $show_id = $link->query($sql);
-
-                $sql = "INSERT INTO user_has_shows (show_id, user_id, watched) VALUES (?,?,?)";
-
-                if($stmt) {
-                    mysqli_stmt_bind_param($stmt, "sss", $show_id, $_SESSION['user_id'], $watched);
-                    if(mysqli_stmt_execute($stmt)){
-                        // Redirect to login page
-                        header("location: /index.php/#home");
-                    } else{
+        $query = "INSERT INTO shows (title) VALUES ('$title')";
+        
+        $result = mysqli_query($connection, $query);
+        
+        if($result) {
+            $query = "SELECT LAST_INSERT_ID()";
+            
+            $result = mysqli_query($connection, $query) or die(mysqli_error($connect));
+            $show_id = mysqli_fetch_object($result);
+            
+            $query = "INSERT INTO user_has_shows (show_id, user_id, watched, reviewed) VALUES ('$show_id','$user','$watched', false)";
+            $result = mysqli_query($connection, $query);
+            if($result) {
+                header('Location: http://' . $_SERVER['HTTP_HOST'] . '/the-watcher-web-app-master/index.php');
+            } else{
                         echo "Something went wrong. Please try again later.";
                     }
-                }
-
-            } else{
+            
+        } else{
                 echo "Something went wrong. Please try again later.";
             }
-        }
-        mysqli_stmt_close($stmt);
     }
-    mysqli_close($link);
+    
 
 }
+
+include_once('header.php');
+?>
+ <div id="add-show" class="container">
+        <h2>Add Show</h2>
+            <?php echo $theerror ?>
+
+        <form id="add-show-form" class="form-group" method="post">
+            <div class="form-group">
+                <label for="title">Title: </label>
+                <input type="text" class="form-control" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="watched">Watched? </label>
+                <input type="radio" class="form-control" name="watched" > Yes
+                <input type="radio" class="form-control" name="watched" checked> No
+
+            </div>
+
+            <button type="submit" class="btn btn-default">Add</button>
+    </div>
+    </form>
+</div>
+</body>

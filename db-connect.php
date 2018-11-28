@@ -1,16 +1,11 @@
 <?php
-/* Database credentials. Assuming you are running MySQL
-server with default setting (user 'root' with no password) */
-define('DB_SERVER', 'thewatcherdbinstance.crtbtchlupnh.us-east-1.rds.amazonaws.com');
-define('DB_USERNAME', 'thewatchadmin');
-define('DB_PASSWORD', 'thewatcher112618');
-define('DB_NAME', 'the_watcher');
-
-/* Attempt to connect to MySQL database */
-$link = mysqli_connect(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_NAME);
-
-// Check connection
-if($link === false){
-    die("ERROR: Could not connect. " . mysqli_connect_error());
+$connection = mysqli_connect('thewatcherdbinstance.crtbtchlupnh.us-east-1.rds.amazonaws.com', 'thewatchadmin', 'thewatcher112618');
+if (!$connection) {
+    die("Database Connection Failed" . mysqli_error($connection));
 }
+$select_db = mysqli_select_db($connection, 'the_watcher');
+if (!$select_db) {
+    die("Database Selection Failed" . mysqli_error($connection));
+}
+
 ?>

@@ -1,93 +1,57 @@
 <?php
 
 require_once('db-connect.php');
+$theerror = "";
 
-$username = $password = $confirm_password = "";
-$username_err = $password_err = $confirm_password_err = "";
-
-// Processing form data when form is submitted
-if($_SERVER["REQUEST_METHOD"] == "POST"){
-
-    // Validate username
-    if(empty(trim($_POST["username"]))){
-        $username_err = "Please enter a username.";
-    } else{
-        // Prepare a select statement
-        $sql = "SELECT id FROM users WHERE username = ?";
-
-        if($stmt = mysqli_prepare($link, $sql)){
-            // Bind variables to the prepared statement as parameters
-            mysqli_stmt_bind_param($stmt, "s", $param_username);
-
-            // Set parameters
-            $param_username = trim($_POST["username"]);
-
-            // Attempt to execute the prepared statement
-            if(mysqli_stmt_execute($stmt)){
-                /* store result */
-                mysqli_stmt_store_result($stmt);
-
-                if(mysqli_stmt_num_rows($stmt) == 1){
-                    $username_err = "This username is already taken.";
-                } else{
-                    $username = trim($_POST["username"]);
-                }
-            } else{
-                echo "Oops! Something went wrong. Please try again later.";
-            }
+if (isset($_POST['username']) && isset($_POST['password'])){
+        $name = $_POST['name'];
+        $username = $_POST['username'];
+        $password = $_POST['password'];
+        $confirm_password = $_POST['confirm-password'];
+        
+        if ($password != $confirm_password) {
+            $therror = "<div class = 'alert alert-danger'> Your passwords do not match</div>";
+            
+        } else {
+        
+        $query = "INSERT INTO `users` (`name`, `username`, `password`) VALUES ('$name','$username','$password')";
+        $result = mysqli_query($connection, $query);
+        if($result){
+            $_SESSION['username'] = $username;
+            $_SESSION['loggedin'] = true;
+            header('Location: http://' . $_SERVER['HTTP_HOST'] . '/the-watcher-web-app-master/index.php');
+        } else {
+            echo $result;
         }
-
-        // Close statement
-        mysqli_stmt_close($stmt);
-    }
-
-    // Validate password
-    if(empty(trim($_POST["password"]))){
-        $password_err = "Please enter a password.";
-    } elseif(strlen(trim($_POST["password"])) < 6){
-        $password_err = "Password must have atleast 6 characters.";
-    } else{
-        $password = trim($_POST["password"]);
-    }
-
-    // Validate confirm password
-    if(empty(trim($_POST["confirm_password"]))){
-        $confirm_password_err = "Please confirm password.";
-    } else{
-        $confirm_password = trim($_POST["confirm_password"]);
-        if(empty($password_err) && ($password != $confirm_password)){
-            $confirm_password_err = "Password did not match.";
         }
     }
+  
 
+include_once('header.php');
 
-    // Check input errors before inserting in database
-    if(empty($username_err) && empty($password_err) && empty($confirm_password_err)){
+?>
 
-        // Prepare an insert statement
-        $sql = "INSERT INTO users (username, password) VALUES (?, ?)";
-
-        if($stmt = mysqli_prepare($link, $sql)){
-            // Bind variables to the prepared statement as parameters
-            mysqli_stmt_bind_param($stmt, "sss", $param_username, $param_password);
-
-            // Set parameters
-            $param_username = $username;
-            $param_password = password_hash($password, PASSWORD_DEFAULT); // Creates a password hash
-
-            // Attempt to execute the prepared statement
-            if(mysqli_stmt_execute($stmt)){
-                // Redirect to login page
-                header("location: /index.php/#home");
-            } else{
-                echo "Something went wrong. Please try again later.";
-            }
-        }
-
-        // Close statement
-        mysqli_stmt_close($stmt);
-    }
-
-    // Close connection
-    mysqli_close($link);
-}
+<div id="register" class="container">
+    <?php echo $theerror ?>
+    <form id="register-form" class="form-group" method="POST">
+        <div class="form-group">
+            <label for="name">Name: </label>
+            <input type="text" class="form-control" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="username">Username: </label>
+            <input type="text" class="form-control" name="username" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password: </label>
+            <input type="password" class="form-control" name="password" required>
+        </div>
+        <div class="form-group">
+            <label for="confirm-password">Confirm Password: </label>
+            <input type="password" class="form-control" name="confirm-password" required>
+        </div>
+        <button id="#register-button" type="submit" class="btn btn-default">Submit</button>
+    </form>
+</div>
+</body>
+</html>
