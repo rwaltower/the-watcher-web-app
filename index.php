@@ -5,8 +5,6 @@ if(!$_SESSION['loggedin']) {
         exit;
     }
 require_once('db-connect.php');
-    $shows = "";
-    $reviews = "";
     $show_titles = array();
     $show_watched_status = array();
     $show_reviewed_status = array();
@@ -39,13 +37,14 @@ require_once('db-connect.php');
     
     $shows = array($show_titles, $show_watched_status, $show_reviewed_status);
     for($i = 0; $i < count($show_ids); $i++) {
+
         if($shows[1][$i] == true && $shows[2][$i] == true) {
             $user_shows .= "<tr><td>".$shows[0][$i]."</td><td>Watched</td><td>Reviewed</td></tr>";
         } else if ($shows[1][$i] == true && $shows[2][$i] == false) {
             $user_shows .= "<tr><td>".$shows[0][$i]."</td><td>Watched</td><td><button type='button' class='btn btn-default' data-toggle='modal' data-target='#add-review' onClick='setReviewTitle(\"".$shows[0][$i]."\")'>Add Review</button></td></tr>";
             } else {
                 $encoded_show = htmlentities($shows[0][$i], ENT_QUOTES, 'UTF-8');
-            $user_shows .= "<tr><td class='title'>".$shows[0][$i]."</td><td><button class='btn btn-default'><a href='index.php?watched_show=".$encoded_show."'>Add To Watched</a></button></td><td><button type='button' class='btn btn-default' data-toggle='modal' data-target='#add-review' onClick='setReviewTitle(\"".($shows[0][$i])."\")' disabled>Add Review</button></td></tr>";
+            $user_shows .= "<tr><td class='title'>".$shows[0][$i]."</td><td><a href='index.php?watched_show=".$encoded_show."'><button class='btn btn-default'>Add To Watched</button></a></td><td><button type='button' class='btn btn-default' data-toggle='modal' data-target='#add-review' onClick='setReviewTitle(\"".($shows[0][$i])."\")' disabled>Add Review</button></td></tr>";
         }
     }
     $review_titles = array();
@@ -65,16 +64,21 @@ require_once('db-connect.php');
             $show = mysqli_fetch_row($result);
             if(mysqli_num_rows($result)){
                 array_push($review_titles, $show[0]);
-                $query = "SELECT * FROM user_has_reviews WHERE show_id = '$this_id'";
+                $query = "SELECT rating, comments FROM user_has_reviews WHERE show_id = '$this_id'";
                 $results = mysqli_query($connection, $query) or die(mysqli_error($connect));
-                $reviews = mysqli_fetch_all($results);
-                for ($i = 0; $i < count($review_titles); $i++) {
-                    $user_reviews .= "<tr><td>".$review_titles[$i]."</td><td>".$reviews[$i][3]."/10</td><td>".$reviews[$i][4]."</td></tr>";
+                $review = mysqli_fetch_row($results);
+                if(mysqli_num_rows($results)) {
+                    array_push($review_ratings, $review[0]);
+                    array_push($review_comments, $review[1]);
                 }
                 
             }
             
         }
+    }
+    $reviews = array($review_titles, $review_ratings, $review_comments);
+    for($i = 0; $i < count($review_titles); $i++) {
+        $user_reviews .= "<tr><td>".$reviews[0][$i]."</td><td>".$reviews[1][$i]."/10</td><td>".$reviews[2][$i]."</td></tr>";
     }
     if (isset($_GET['watched_show'])){
         $watched_show = $_GET['watched_show'];
